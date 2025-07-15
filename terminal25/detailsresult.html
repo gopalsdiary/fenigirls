@@ -250,7 +250,7 @@
                 <!-- Content will be dynamically loaded here -->
                 <div class="loading">Loading student details...</div>
             </div>
-           
+            <button class="back-btn" onclick="goBack()">← Back to List</button>
             <button class="print-btn" onclick="printResult()">🖨️ Print Result</button>
         </div>
     </div>
@@ -266,9 +266,10 @@
             }
         });
 
+        // Data loading variables
         const check_android_web_ios_ID = '1FGfCX9f6ylOSTGuKJW8lmBZ3nSti3eLPeGYLGL9WwPs';
-const exam_annual = 'Terminal25';
-const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}/export?format=csv&sheet=${exam_annual}`;
+const exam_annual = 'Ann24';
+        const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}/export?format=csv&sheet=${exam_annual}`;
 
         let students = [];
         let headers = [];
@@ -295,54 +296,26 @@ const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}
 
             try {
                 console.log('Loading data for IID:', targetIID);
-                
-                // Load data from all CSV files
-                const allStudents = [];
-                let allHeaders = [];
-                
-                for (const csvFile of csvFiles) {
-                    try {
-                        const response = await fetch(csvFile);
-                        if (!response.ok) {
-                            console.warn(`Could not load ${csvFile}: ${response.status}`);
-                            continue;
-                        }
-                        
-                        const csvData = await response.text();
-                        const rows = csvData.split('\n').filter(row => row.trim() !== '');
-                        
-                        if (rows.length === 0) continue;
-                        
-                        // Process headers (use the first file's headers)
-                        if (allHeaders.length === 0) {
-                            allHeaders = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                        }
-                        
-                        // Skip header row and process student data
-                        const fileStudents = rows.slice(2).map(row => { // Skip first two rows (headers)
-                            const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                            const student = {};
-                            allHeaders.forEach((header, index) => {
-                                const cleanHeader = header.replace(/\*/g, '').trim().replace(/ /g, '_').toLowerCase();
-                                student[cleanHeader] = values[index] ? values[index].replace(/(^"|"$)/g, '').trim() : '';
-                            });
-                            return student;
-                        });
-                        
-                        allStudents.push(...fileStudents);
-                        console.log(`Loaded ${fileStudents.length} students from ${csvFile}`);
-                        
-                    } catch (fileError) {
-                        console.warn(`Error loading ${csvFile}:`, fileError);
-                    }
-                }
-                
-                // Set global variables
-                headers = allHeaders;
-                students = allStudents;
+                const response = await fetch(skip);
+                const csvData = await response.text();
+                const rows = csvData.split('\n').filter(row => row.trim() !== '');
+
+                // Process headers
+                headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
 
                 // Dynamically generate SUBJECT_MAP
                 generateSubjectMap(headers);
+
+                // Process student data
+                students = rows.slice(1).map(row => {
+                    const values = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    const student = {};
+                    headers.forEach((header, index) => {
+                        const cleanHeader = header.replace(/\*/g, '').trim().replace(/ /g, '_').toLowerCase();
+                        student[cleanHeader] = values[index] ? values[index].replace(/(^"|"$)/g, '').trim() : '';
+                    });
+                    return student;
+                });
 
                 console.log('Total students loaded:', students.length);
                 console.log('Looking for IID:', targetIID);
@@ -360,7 +333,6 @@ const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}
                     document.getElementById('marksheetContent').innerHTML = `
                         <div class="error">
                             <p>Student with IID "${targetIID}" not found.</p>
-                            <p>Available students: ${students.length}</p>
                             <p><a href="index.html">Return to student list</a></p>
                         </div>
                     `;
@@ -371,7 +343,6 @@ const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}
                 document.getElementById('marksheetContent').innerHTML = `
                     <div class="error">
                         <p>Error loading student data. Please try again.</p>
-                        <p>Error details: ${error.message}</p>
                         <p><a href="index.html">Return to student list</a></p>
                     </div>
                 `;
@@ -477,9 +448,7 @@ const skip = `https://docs.google.com/spreadsheets/d/${check_android_web_ios_ID}
             `;
         }
 
-        function goBack() {
-            window.location.href = 'index.html';
-        }
+        
         
         function printResult() {
             // Hide buttons before printing

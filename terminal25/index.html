@@ -32,9 +32,6 @@
         </select>
         
         <div id="studentList" class="student-list"></div>
-        <div id="dataCount" class="data-count" style="text-align: center; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; color: #666;">
-            <p id="countText">Loading student data...</p>
-        </div>
         <div id="marksheet" style="display: none;">
             <div class="marksheet" id="marksheetContent"></div>
             <button class="back-btn" style="margin-top: 0.5rem;" onclick="showStudentList()">← Back to List</button>
@@ -78,10 +75,6 @@ async function loadData() {
         renderClassAndShiftOptions();
     } catch (error) {
         console.error('Error:', error);
-        document.getElementById('countText').innerHTML = `
-            <strong style="color: #d32f2f;">Error loading data</strong><br>
-            <small>Please check console for more details</small>
-        `;
         alert('ডেটা লোড করতে সমস্যা হয়েছে!');
     }
 }
@@ -117,12 +110,8 @@ function renderStudentList() {
         card.className = 'student-card';
         card.innerHTML = `
             <h3>${student.name || 'N/A'}</h3>
-            <div class="student-info">
-                <p>Roll: ${student.roll || 'N/A'}</p>
-                <p>IID: ${student.iid || 'N/A'}</p>
-                <p>Class: ${student.class || 'N/A'}</p>
-            </div>
-            <div class="student-action">View Result →</div>
+            <p>Roll: ${student.roll || 'N/A'}</p>
+            <p>IID: ${student.iid || 'N/A'}</p>
         `;
         card.onclick = () => showMarksheet(student);
         container.appendChild(card);
@@ -133,9 +122,6 @@ function renderStudentList() {
     comment.style.textAlign = 'center';
     comment.style.marginTop = '1rem';
     container.appendChild(comment);
-    
-    // Update data count
-    updateDataCount(initialStudents.length, students.length);
 }
 
 function filterStudentList() {
@@ -166,19 +152,12 @@ function renderFilteredStudentList(filteredStudents) {
         card.className = 'student-card';
         card.innerHTML = `
             <h3>${student.name || 'N/A'}</h3>
-            <div class="student-info">
-                <p>Roll: ${student.roll || 'N/A'}</p>
-                <p>IID: ${student.iid || 'N/A'}</p>
-                <p>Class: ${student.class || 'N/A'}</p>
-            </div>
-            <div class="student-action">View Result →</div>
+            <p>Roll: ${student.roll || 'N/A'}</p>
+            <p>IID: ${student.iid || 'N/A'}</p>
         `;
         card.onclick = () => showMarksheet(student);
         container.appendChild(card);
     });
-    
-    // Update data count for filtered results
-    updateDataCount(filteredStudents.length, students.length);
 }
 
 function renderClassAndShiftOptions() {
@@ -214,23 +193,6 @@ function showStudentList() {
     document.getElementById('shiftFilter').style.display = 'block';
     document.getElementById('studentList').style.display = 'block';
     document.getElementById('marksheet').style.display = 'none';
-}
-
-function updateDataCount(displayedCount, totalCount) {
-    const countElement = document.getElementById('countText');
-    if (countElement) {
-        if (displayedCount === totalCount) {
-            countElement.innerHTML = `
-                <strong>Total Students: ${totalCount}</strong><br>
-                <small>Displaying all ${displayedCount} students</small>
-            `;
-        } else {
-            countElement.innerHTML = `
-                <strong>Showing: ${displayedCount} of ${totalCount} students</strong><br>
-                <small>Use search or filters to narrow down results</small>
-            `;
-        }
-    }
 }
 
 // Initialize
